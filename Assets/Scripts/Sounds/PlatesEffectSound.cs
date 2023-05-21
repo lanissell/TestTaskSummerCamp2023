@@ -1,3 +1,5 @@
+using Plates;
+using Player;
 using UnityEngine;
 
 namespace Sounds
@@ -11,12 +13,23 @@ namespace Sounds
         private AudioClip[] _fineEffectSounds;
         private RandomSoundPlayer _soundPlayer;
 
+        private void OnEnable()
+        {
+            PlateAddingStep.StepAdding += PlayBonusSound;
+            PlateMovingBack.MovingBackActivating += PlayFineSound;
+            PlayersChanger.AllPlayerFinished += DestroyThisGameObject;
+        }
+
+        private void OnDisable()
+        {
+            PlateAddingStep.StepAdding -= PlayBonusSound;
+            PlateMovingBack.MovingBackActivating -= PlayFineSound;
+            PlayersChanger.AllPlayerFinished -= DestroyThisGameObject;
+        }
+
         private void Start()
         {
             _soundPlayer = GetComponent<RandomSoundPlayer>();
-            GlobalEventManager.OnAddingStepActive += PlayBonusSound;
-            GlobalEventManager.OnMovingBackActive += PlayFineSound;
-            GlobalEventManager.OnAllPlayersFinished += DestroyThisGameObject;
         }
 
         private void PlayBonusSound()
@@ -33,9 +46,6 @@ namespace Sounds
 
         private void DestroyThisGameObject()
         {
-            GlobalEventManager.OnAddingStepActive -= PlayBonusSound;
-            GlobalEventManager.OnMovingBackActive -= PlayFineSound;
-            GlobalEventManager.OnAllPlayersFinished -= DestroyThisGameObject;
             Destroy(gameObject);
         }
 

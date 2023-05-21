@@ -1,10 +1,14 @@
-﻿namespace Plates
+﻿using System;
+
+namespace Plates
 {
     public class PlateAddingStep: Plate
     {
+        public static event Action StepAdding; 
+
         public override bool ActivatePlateEffect()
         {
-            GlobalEventManager.SendOnAddingStepActive();
+            StepAdding?.Invoke();
             return true;
         }
     }

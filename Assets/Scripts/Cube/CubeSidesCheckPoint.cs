@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace PlayingCube
+namespace Cube
 {
     public class CubeSidesCheckPoint : MonoBehaviour
     {

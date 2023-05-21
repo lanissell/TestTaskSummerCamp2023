@@ -1,3 +1,4 @@
+using System;
 using Player;
 using TMPro;
 using UnityEngine;
@@ -12,10 +13,16 @@ namespace UI
                 [SerializeField]
                 private Image _coloredPanel;
 
-                private void Awake()
+                private void OnEnable()
                 {
-                    GlobalEventManager.OnPlayerChanged += ShowInformationOnScreen;
-                    GlobalEventManager.OnAllPlayersFinished += DestroyThisGameObject;
+                    PlayersChanger.PlayerChanged += ShowInformationOnScreen;
+                    PlayersChanger.AllPlayerFinished += DestroyThisGameObject;
+                }
+
+                private void OnDisable()
+                {
+                    PlayersChanger.PlayerChanged -= ShowInformationOnScreen;
+                    PlayersChanger.AllPlayerFinished -= DestroyThisGameObject;
                 }
 
                 private void ShowInformationOnScreen(PlayerStats playerStats)
@@ -28,8 +35,6 @@ namespace UI
 
                 private void DestroyThisGameObject()
                 {
-                    GlobalEventManager.OnPlayerChanged -= ShowInformationOnScreen;
-                    GlobalEventManager.OnAllPlayersFinished -= DestroyThisGameObject;
                     Destroy(gameObject);
                 }
         }

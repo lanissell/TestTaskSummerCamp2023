@@ -1,3 +1,4 @@
+using Plates;
 using UnityEngine;
 
 namespace Player
@@ -11,11 +12,11 @@ namespace Player
         public int FineCount = 0;
         public Color Color;
 
-        private void Awake()
+        private void OnEnable()
         {
-            GlobalEventManager.OnAddingStepActive += AddBonusCount;
-            GlobalEventManager.OnMovingBackActive += AddFineCount;
-            GlobalEventManager.OnPlayerFinished += UnsubscribeOnEvents;
+            PlateAddingStep.StepAdding += AddBonusCount;
+            PlateMovingBack.MovingBackActivating += AddFineCount;
+            PlayerMovement.PlayerFinished += UnsubscribeOnEvents;
         }
         
         public void AddMovesCount() => MovesCount++;
@@ -35,9 +36,9 @@ namespace Player
         private void UnsubscribeOnEvents(PlayerStats stats)
         {
             if (stats != this) return;
-            GlobalEventManager.OnAddingStepActive -= AddBonusCount;
-            GlobalEventManager.OnMovingBackActive -= AddFineCount;
-            GlobalEventManager.OnPlayerFinished -= UnsubscribeOnEvents;
+            PlateAddingStep.StepAdding -= AddBonusCount;
+            PlateMovingBack.MovingBackActivating -= AddFineCount;
+            PlayerMovement.PlayerFinished -= UnsubscribeOnEvents;
         }
 
     }

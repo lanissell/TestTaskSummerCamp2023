@@ -1,11 +1,14 @@
-﻿namespace Plates
+﻿using System;
+
+namespace Plates
 {
     public class PlateMovingBack: Plate
     {
+        public static event Action MovingBackActivating;
+
         public override bool ActivatePlateEffect()
         {
-            GlobalEventManager.SendOnPlayerMovementStart(PlateNum);
-            GlobalEventManager.SendOnMovingBackActive();
+            MovingBackActivating?.Invoke();
             return true;
         }
     }

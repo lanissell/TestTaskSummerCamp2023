@@ -1,11 +1,17 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Cube;
+
 
 namespace Player
 {
     [RequireComponent(typeof(PlayerStats))]
     public class PlayerMovement : MonoBehaviour
     {
+        public static event Action PlayerStopped;
+        public static event Action<PlayerStats> PlayerFinished;
+        
         [SerializeField]
         private float _distanceThreshold;
         [SerializeField]
@@ -17,16 +23,26 @@ namespace Player
         private WayGenerator _generator;
         private Transform _transform;
         private PlayerStats _playerStats;
-    
+
+        private void OnEnable()
+        {
+            PlayingCube.CubeDropped += OnCubeDropped;
+        }
+
+        private void OnDisable()
+        {
+            PlayingCube.CubeDropped -= OnCubeDropped;
+        }
+
         private void Start()
         {
             _transform = transform;
             _generator = FindObjectOfType<WayGenerator>();
             _playerStats = GetComponent<PlayerStats>();
-            GlobalEventManager.OnPlayerMovementStart += StartMoveCoroutine;
+             
         }
     
-        private void StartMoveCoroutine(int plateCount)
+        private void OnCubeDropped(int plateCount)
         {
             if (!_playerStats.CanPlay) return;
             StartCoroutine(MovePlayerOnWay(plateCount));
@@ -45,12 +61,12 @@ namespace Player
             }
             _transform.parent = target;
             _currentPositionIndex = ValidatePositionIndex(_currentPositionIndex + plateCount);
-            if (_generator.Plates[_currentPositionIndex].ActivatePlateEffect()) yield break;
-            GlobalEventManager.SendOnPlayerStop();
             
+            if (_generator.Plates[_currentPositionIndex].ActivatePlateEffect()) yield break;
+            PlayerStopped?.Invoke();
+
             if (_currentPositionIndex != _generator.Plates.Count - 1) yield break;
-            GlobalEventManager.SendOnPlayerFinished(_playerStats);
-            GlobalEventManager.OnPlayerMovementStart -= StartMoveCoroutine;
+            PlayerFinished?.Invoke(_playerStats);
         }
 
         private int ValidatePositionIndex(int index)

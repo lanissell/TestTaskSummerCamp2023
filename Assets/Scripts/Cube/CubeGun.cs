@@ -1,9 +1,12 @@
+using System;
+using Plates;
+using Player;
 using Sounds;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace PlayingCube
+namespace Cube
 {
     [RequireComponent(typeof(RandomSoundPlayer))]
     public class CubeGun : MonoBehaviour
@@ -21,14 +24,26 @@ namespace PlayingCube
         private GameObject _cube;
         private RandomSoundPlayer _soundPlayer;
         private bool _isCanShoot = true;
-   
+
+        private void OnEnable()
+        {
+            PlateAddingStep.StepAdding += SetCanShootTrue;
+            PlayerMovement.PlayerStopped += SetCanShootTrue;
+            CubeNegativeZone.Touched += SetCanShootTrue;
+            PlayersChanger.AllPlayerFinished += DestroyGun;
+        }
+
+        private void OnDisable()
+        {
+            PlateAddingStep.StepAdding -= SetCanShootTrue;
+            PlayerMovement.PlayerStopped -= SetCanShootTrue;
+            CubeNegativeZone.Touched -= SetCanShootTrue;
+            PlayersChanger.AllPlayerFinished -= DestroyGun;
+        }
+
         private void Start()
         {
             _soundPlayer = GetComponent<RandomSoundPlayer>();
-            GlobalEventManager.OnAddingStepActive += SetCanShootTrue;
-            GlobalEventManager.OnPlayerStop += SetCanShootTrue;
-            GlobalEventManager.OnCubeTouchNegativeZone += SetCanShootTrue;
-            GlobalEventManager.OnAllPlayersFinished += DestroyGun;
         }
 
         private void Update()
@@ -60,10 +75,6 @@ namespace PlayingCube
         
         private void DestroyGun()
         {
-            GlobalEventManager.OnAddingStepActive -= SetCanShootTrue;
-            GlobalEventManager.OnPlayerStop -= SetCanShootTrue;
-            GlobalEventManager.OnCubeTouchNegativeZone -= SetCanShootTrue;
-            GlobalEventManager.OnAllPlayersFinished -= DestroyGun;
             Destroy(gameObject);
         }
 

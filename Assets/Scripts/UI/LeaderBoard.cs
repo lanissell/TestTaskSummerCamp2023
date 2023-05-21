@@ -1,3 +1,4 @@
+using System;
 using Player;
 using UnityEngine;
 
@@ -13,10 +14,16 @@ namespace UI
         private Transform _tableTransform;
         private int _playerCounter;
 
-        private void Start()
+        private void OnEnable()
         {
-            GlobalEventManager.OnPlayerFinished += AddPlayerOnBoard;
-            GlobalEventManager.OnAllPlayersFinished += ActivateLeaderBoard;
+            PlayerMovement.PlayerFinished += AddPlayerOnBoard;
+            PlayersChanger.AllPlayerFinished += ActivateLeaderBoard;
+        }
+
+        private void OnDisable()
+        {
+            PlayerMovement.PlayerFinished -= AddPlayerOnBoard;
+            PlayersChanger.AllPlayerFinished -= ActivateLeaderBoard;
         }
 
         private void AddPlayerOnBoard(PlayerStats stats)
@@ -32,8 +39,6 @@ namespace UI
         private void ActivateLeaderBoard()
         {
             _leaderBoardGameObject.SetActive(true);
-            GlobalEventManager.OnPlayerFinished -= AddPlayerOnBoard;
-            GlobalEventManager.OnAllPlayersFinished -= ActivateLeaderBoard;
         }
 
     }

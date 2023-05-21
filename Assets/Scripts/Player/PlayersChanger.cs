@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Player
@@ -5,16 +6,29 @@ namespace Player
     [RequireComponent(typeof(PlayersCreator), typeof(AudioSource))]
     public class PlayersChanger : MonoBehaviour
     {
+        public static event Action<PlayerStats> PlayerChanged;
+        public static event Action AllPlayerFinished;
+
         private PlayersCreator _playersCreator;
         private int _currentPlayerIndex;
         private AudioSource _audioSource;
+
+        private void OnEnable()
+        {
+            PlayerMovement.PlayerStopped += ChangeCurrentPlayer;
+            PlayerMovement.PlayerFinished += RemovePlayerFromList;
+        }
+
+        private void OnDisable()
+        {
+            PlayerMovement.PlayerStopped -= ChangeCurrentPlayer;
+            PlayerMovement.PlayerFinished -= RemovePlayerFromList;
+        }
 
         private void Start()
         {
             _audioSource = GetComponent<AudioSource>();
             _playersCreator = GetComponent<PlayersCreator>();
-            GlobalEventManager.OnPlayerStop += ChangeCurrentPlayer;
-            GlobalEventManager.OnPlayerFinished += RemovePlayerFromList;
         }
 
         private void ChangeCurrentPlayer()
@@ -42,7 +56,7 @@ namespace Player
         private void ActivatePlayer(PlayerStats player)
         {
             player.CanPlay = true;
-            GlobalEventManager.SendOnPlayerChanged(player);
+            PlayerChanged?.Invoke(player);
         }
 
         private void RemovePlayerFromList(PlayerStats playerStats)
@@ -52,14 +66,8 @@ namespace Player
             players.Remove(playerStats);
             _currentPlayerIndex--;
             if (players.Count != 0) return;
-            IsAllPlayersFinished();
+            AllPlayerFinished?.Invoke();
         }
-        
-        private void IsAllPlayersFinished()
-        {
-            GlobalEventManager.OnPlayerStop -= ChangeCurrentPlayer;
-            GlobalEventManager.OnPlayerFinished -= RemovePlayerFromList;
-            GlobalEventManager.SendOnAllPlayersFinished();
-        }
+
     }
 }

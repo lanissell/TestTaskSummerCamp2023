@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Plates;
 using UnityEngine;
@@ -14,15 +15,23 @@ namespace Player
         [SerializeField]
         private Color[] _newPlayerColors;
 
+        private void OnEnable()
+        {
+            GameStarter.GameStarted += CreatePlayers;
+        }
+
+        private void OnDisable()
+        {
+            GameStarter.GameStarted -= CreatePlayers;
+        }
+
         private void Start()
         {
             Players = new List<PlayerStats>();
-            GlobalEventManager.OnStartButtonClick += CreatePlayers;
         }
 
         private void CreatePlayers(List<string> names)
         {
-            GlobalEventManager.OnStartButtonClick -= CreatePlayers;
             int playersCount = names.Count;
             int colorIndex = 0;
             for (int i = 0; i < playersCount; i++)
@@ -34,9 +43,8 @@ namespace Player
                     SetColor(ref colorIndex, playerRenderer);
                 }
                 Players.Add(newPlayer);
-                SetPlayerName(i, names[i]);
+                SetPlayerName(i, names[i]); 
             }
-            GlobalEventManager.SendOnPlayerChanged(Players[0]);
             Players[0].CanPlay = true;
         }
 

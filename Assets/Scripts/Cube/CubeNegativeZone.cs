@@ -1,12 +1,15 @@
+using System;
 using UnityEngine;
 
-namespace PlayingCube
+namespace Cube
 {
     public class CubeNegativeZone : MonoBehaviour
     {
+        public static event Action Touched; 
+
         private void OnTriggerEnter(Collider other)
         {
-            GlobalEventManager.SendOnCubeTouchNegativeZone();
+            Touched?.Invoke();
         }
     }
 }

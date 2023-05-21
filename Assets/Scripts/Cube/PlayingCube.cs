@@ -1,14 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace PlayingCube
+namespace Cube
 {
     [RequireComponent(typeof(Rigidbody))]
     public class PlayingCube : MonoBehaviour
     {
+        public static event Action<int> CubeDropped; 
+
         [SerializeField]
         private float _checkCubeVelocityInterval;
         [SerializeField]
@@ -50,7 +53,7 @@ namespace PlayingCube
             }
             var sideWithMinAngle = angles.OrderBy(a => a.Item2).ToArray()[0].Item1;
             _checkSideMarker.End();
-            GlobalEventManager.SendOnPlayerMovementStart(sideWithMinAngle.SideNumber);
+            CubeDropped?.Invoke(sideWithMinAngle.SideNumber);
         }
 
         private void OnTriggerEnter(Collider other)
