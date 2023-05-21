@@ -54,6 +54,7 @@ namespace Player
             PlayerStats newPlayer = Instantiate(_playerPrefab, emptyPoint.position, 
                 Quaternion.identity);
             newPlayer.transform.parent = emptyPoint;
+            newPlayer.GetComponent<PlayerMovement>().StartPlate = _startPlate;
             return newPlayer;
         }
 

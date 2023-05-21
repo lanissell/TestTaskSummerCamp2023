@@ -1,4 +1,6 @@
 ﻿using System;
+using Player;
+using UnityEngine;
 
 namespace Plates
 {
@@ -6,10 +8,17 @@ namespace Plates
     {
         public static event Action MovingBackActivating;
 
-        public override bool ActivatePlateEffect()
+        [SerializeField] 
+        private int _moveBackStepsCount = -3;
+
+        private void Awake()
+        {
+            PlateNum = _moveBackStepsCount;
+        }
+
+        public override void ActivatePlateEffect(PlayerStats playerStats)
         {
             MovingBackActivating?.Invoke();
-            return true;
         }
     }
 }

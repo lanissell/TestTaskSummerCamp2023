@@ -1,4 +1,5 @@
 using System;
+using Plates;
 using UnityEngine;
 
 namespace Player
@@ -15,20 +16,26 @@ namespace Player
 
         private void OnEnable()
         {
-            PlayerMovement.PlayerStopped += ChangeCurrentPlayer;
-            PlayerMovement.PlayerFinished += RemovePlayerFromList;
+            PlayerMovement.PlayerStopped += OnPlayerStopped;
+            FinishPlate.PlayerFinished += RemovePlayerFromList;
         }
 
         private void OnDisable()
         {
-            PlayerMovement.PlayerStopped -= ChangeCurrentPlayer;
-            PlayerMovement.PlayerFinished -= RemovePlayerFromList;
+            PlayerMovement.PlayerStopped -= OnPlayerStopped;
+            FinishPlate.PlayerFinished -= RemovePlayerFromList;
         }
 
         private void Start()
         {
             _audioSource = GetComponent<AudioSource>();
             _playersCreator = GetComponent<PlayersCreator>();
+        }
+
+        private void OnPlayerStopped(Plate plate)
+        {
+            if (plate.IsMovePlayer) return;
+            ChangeCurrentPlayer();
         }
 
         private void ChangeCurrentPlayer()

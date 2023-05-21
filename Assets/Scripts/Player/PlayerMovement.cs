@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using Cube;
+using Plates;
 
 
 namespace Player
@@ -9,8 +10,9 @@ namespace Player
     [RequireComponent(typeof(PlayerStats))]
     public class PlayerMovement : MonoBehaviour
     {
-        public static event Action PlayerStopped;
-        public static event Action<PlayerStats> PlayerFinished;
+        public static event Action<Plate> PlayerStopped;
+        
+        public Plate StartPlate;
         
         [SerializeField]
         private float _distanceThreshold;
@@ -18,66 +20,66 @@ namespace Player
         private float _movementSpeed;
         [SerializeField]
         private float _movementHeight;
-
-        private int _currentPositionIndex = 0;
-        private WayGenerator _generator;
+        private Plate _currentPlate;
+        
         private Transform _transform;
         private PlayerStats _playerStats;
-
-        private void OnEnable()
+        
+         private void OnEnable()
         {
             PlayingCube.CubeDropped += OnCubeDropped;
+            PlateMovingBack.MovingBackActivating += OnMovingBackActivating;
         }
 
         private void OnDisable()
         {
             PlayingCube.CubeDropped -= OnCubeDropped;
+            PlateMovingBack.MovingBackActivating -= OnMovingBackActivating;
         }
 
         private void Start()
         {
+            _currentPlate = StartPlate;
             _transform = transform;
-            _generator = FindObjectOfType<WayGenerator>();
             _playerStats = GetComponent<PlayerStats>();
-             
         }
     
         private void OnCubeDropped(int plateCount)
         {
-            if (!_playerStats.CanPlay) return;
-            StartCoroutine(MovePlayerOnWay(plateCount));
+            StartCoroutine(MovePlayerAlongWay(plateCount, false));
         }
 
-        private IEnumerator MovePlayerOnWay(int plateCount)
+        private void OnMovingBackActivating()
         {
-            Transform target = _transform;
-            _transform.parent = null;
-            for (int i = 1; i <= Mathf.Abs(plateCount); i++)
+            if (_currentPlate.PlateNum == null) return;
+            int plateCount = Math.Abs((int)_currentPlate.PlateNum);
+            StartCoroutine(MovePlayerAlongWay(plateCount, true));
+        }
+
+        private IEnumerator MovePlayerAlongWay(int plateCount, bool isBack)
+        {
+            if (!_playerStats.CanPlay) yield break;
+            for (int i = 0; i < plateCount; i++)
             {
-                int positionIndex = ValidatePositionIndex(_currentPositionIndex + 
-                    i * (plateCount / Mathf.Abs(plateCount)));
-                target = _generator.Plates[positionIndex].GetEmptyPosition();
-                yield return MovePlayerToTarget(target.position);
+                Vector3 nextPosition = GetNextPlatePosition(isBack);
+                yield return MovePlayerToTarget(nextPosition);
             }
-            _transform.parent = target;
-            _currentPositionIndex = ValidatePositionIndex(_currentPositionIndex + plateCount);
-            
-            if (_generator.Plates[_currentPositionIndex].ActivatePlateEffect()) yield break;
-            PlayerStopped?.Invoke();
-
-            if (_currentPositionIndex != _generator.Plates.Count - 1) yield break;
-            PlayerFinished?.Invoke(_playerStats);
+            _transform.parent = _currentPlate.GetEmptyPosition();
+            PlayerStopped?.Invoke(_currentPlate);
+            _currentPlate.ActivatePlateEffect(_playerStats);
         }
 
-        private int ValidatePositionIndex(int index)
+        private Vector3 GetNextPlatePosition(bool isBack)
         {
-            if (index > _generator.Plates.Count - 1) return _generator.Plates.Count - 1;
-            if (index < 0) return 0;
-            return index;
+            Plate nextPlate = isBack ? _currentPlate.PreviousPlate : _currentPlate.NextPlate;
+            if (!nextPlate) return Vector3.zero;
+            _currentPlate = nextPlate;
+            return nextPlate.GetEmptyPosition().position;
         }
-    
+        
         private IEnumerator MovePlayerToTarget(Vector3 targetPosition)
         {
+            if (targetPosition == Vector3.zero) yield break;
             Vector3 startPosition = _transform.position;
             float startTime = Time.time;
             while (Vector3.Distance(_transform.position, targetPosition) > _distanceThreshold)

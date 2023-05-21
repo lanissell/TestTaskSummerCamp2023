@@ -1,4 +1,5 @@
 using System;
+using Plates;
 using Player;
 using UnityEngine;
 
@@ -16,13 +17,13 @@ namespace UI
 
         private void OnEnable()
         {
-            PlayerMovement.PlayerFinished += AddPlayerOnBoard;
+            FinishPlate.PlayerFinished += AddPlayerOnBoard;
             PlayersChanger.AllPlayerFinished += ActivateLeaderBoard;
         }
 
         private void OnDisable()
         {
-            PlayerMovement.PlayerFinished -= AddPlayerOnBoard;
+            FinishPlate.PlayerFinished -= AddPlayerOnBoard;
             PlayersChanger.AllPlayerFinished -= ActivateLeaderBoard;
         }
 

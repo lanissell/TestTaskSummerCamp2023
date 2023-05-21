@@ -1,10 +1,11 @@
-﻿namespace Plates
+﻿using Player;
+
+namespace Plates
 {
     public class SimplePlate: Plate
     {
-        public override bool ActivatePlateEffect()
+        public override void ActivatePlateEffect(PlayerStats playerStats)
         {
-            return false;
         }
     }
 }

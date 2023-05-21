@@ -3,13 +3,13 @@ using Player;
 
 namespace Plates
 {
-    public class PlateAddingStep: Plate
+    public class FinishPlate: Plate
     {
-        public static event Action StepAdding;
+        public static event Action<PlayerStats> PlayerFinished;
         
         public override void ActivatePlateEffect(PlayerStats playerStats)
         {
-            StepAdding?.Invoke();
+            PlayerFinished?.Invoke(playerStats);
         }
     }
 }

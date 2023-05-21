@@ -160,6 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb6338c2320b42ee96ba4aa484b0789f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <IsMovePlayer>k__BackingField: 1
   _positionsOnPlate:
   - {fileID: 6868154800139820790}
   - {fileID: 259103515773770192}

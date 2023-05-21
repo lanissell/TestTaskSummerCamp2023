@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class WayGenerator : MonoBehaviour
 {
-    public List<Plate> Plates;
+    [SerializeField] 
+    private Plate _startPlate;
+    [SerializeField] 
+    private Plate _finishPlate;
     
     [Header("SimplePlate")]
     [SerializeField]
@@ -20,13 +23,14 @@ public class WayGenerator : MonoBehaviour
     [SerializeField]
     private PlateMovingBack _plateMovingBack;
     [SerializeField]
-    private int _movingBackSteps;
-    [SerializeField]
     private float _plateMovingBackRate;
+    
     private Transform _transform;
+    private Plate _previousPlate;
 
     private void Awake()
     {
+        _previousPlate = _startPlate;
         _transform = transform;
         GenerateWayByChildPositions();
     }
@@ -40,9 +44,12 @@ public class WayGenerator : MonoBehaviour
             Plate plate = Instantiate(ChosePlatePrefab(ref plateNum), 
                 childrenTransforms[i].position, Quaternion.identity, _transform);
             plate.PlateNum = plateNum;
-            Plates.Add(plate);
+            plate.PreviousPlate = _previousPlate;
+            _previousPlate.NextPlate = plate;
+            _previousPlate = plate;
             Destroy(childrenTransforms[i].gameObject);
         }
+        _previousPlate.NextPlate = _finishPlate;
     }
 
     private Plate ChosePlatePrefab(ref int plateNum)
@@ -55,7 +62,6 @@ public class WayGenerator : MonoBehaviour
         else if (plateNum % _plateMovingBackRate == 0)
         {
             platePrefab = _plateMovingBack;
-            plateNum = -_movingBackSteps;
         }
         return platePrefab;
     }

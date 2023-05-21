@@ -28,7 +28,7 @@ namespace Cube
         private void OnEnable()
         {
             PlateAddingStep.StepAdding += SetCanShootTrue;
-            PlayerMovement.PlayerStopped += SetCanShootTrue;
+            PlayersChanger.PlayerChanged += OnPlayerChanged;
             CubeNegativeZone.Touched += SetCanShootTrue;
             PlayersChanger.AllPlayerFinished += DestroyGun;
         }
@@ -36,7 +36,6 @@ namespace Cube
         private void OnDisable()
         {
             PlateAddingStep.StepAdding -= SetCanShootTrue;
-            PlayerMovement.PlayerStopped -= SetCanShootTrue;
             CubeNegativeZone.Touched -= SetCanShootTrue;
             PlayersChanger.AllPlayerFinished -= DestroyGun;
         }
@@ -72,6 +71,11 @@ namespace Cube
         }
 
         private void SetCanShootTrue() => _isCanShoot = true;
+
+        private void OnPlayerChanged(PlayerStats playerStats)
+        {
+            SetCanShootTrue();
+        }
         
         private void DestroyGun()
         {
