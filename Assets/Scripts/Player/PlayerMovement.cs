@@ -28,13 +28,13 @@ namespace Player
          private void OnEnable()
         {
             PlayingCube.CubeDropped += OnCubeDropped;
-            PlateMovingBack.MovingBackActivating += OnMovingBackActivating;
+            MovingBackPlate.MovingBackActivating += OnMovingBackActivating;
         }
 
         private void OnDisable()
         {
             PlayingCube.CubeDropped -= OnCubeDropped;
-            PlateMovingBack.MovingBackActivating -= OnMovingBackActivating;
+            MovingBackPlate.MovingBackActivating -= OnMovingBackActivating;
         }
 
         private void Start()

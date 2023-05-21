@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Plates
 {
-    public class PlateMovingBack: Plate
+    public class MovingBackPlate: Plate
     {
         public static event Action MovingBackActivating;
 

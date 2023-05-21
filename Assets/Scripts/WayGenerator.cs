@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using Plates;
+using Plates.PlateCreator;
 using UnityEngine;
+
 
 public class WayGenerator : MonoBehaviour
 {
@@ -8,28 +9,18 @@ public class WayGenerator : MonoBehaviour
     private Plate _startPlate;
     [SerializeField] 
     private Plate _finishPlate;
-    
-    [Header("SimplePlate")]
-    [SerializeField]
-    private Plate _simplePlate;
-    
-    [Header("PlateAddingStep")]
-    [SerializeField]
-    private PlateAddingStep _plateAddingStep;
-    [SerializeField]
-    private float _plateAddingStepRate;
-    
-    [Header("PlateMovingBack")]
-    [SerializeField]
-    private PlateMovingBack _plateMovingBack;
-    [SerializeField]
-    private float _plateMovingBackRate;
-    
+    [SerializeField] 
+    private int _addingStepPlateRate;
+    [SerializeField] 
+    private int _movingBackPlateRate;
+
+    private PlateCreateController _plateCreateController;
     private Transform _transform;
     private Plate _previousPlate;
-
+    
     private void Awake()
     {
+        _plateCreateController = new PlateCreateController(_addingStepPlateRate, _movingBackPlateRate);
         _previousPlate = _startPlate;
         _transform = transform;
         GenerateWayByChildPositions();
@@ -41,10 +32,10 @@ public class WayGenerator : MonoBehaviour
         for (int i = 1; i < childrenTransforms.Length; i++)
         {
             int plateNum = i;
-            Plate plate = Instantiate(ChosePlatePrefab(ref plateNum), 
-                childrenTransforms[i].position, Quaternion.identity, _transform);
-            plate.PlateNum = plateNum;
-            plate.PreviousPlate = _previousPlate;
+            PlateCreator plateCreator = _plateCreateController.GetPlateCreator(plateNum);
+            Plate plate = plateCreator.GetPlate(plateNum, _previousPlate);
+            Transform plateTransform = plate.transform;
+            plateTransform.position = childrenTransforms[plateNum].position;
             _previousPlate.NextPlate = plate;
             _previousPlate = plate;
             Destroy(childrenTransforms[i].gameObject);
@@ -52,17 +43,5 @@ public class WayGenerator : MonoBehaviour
         _previousPlate.NextPlate = _finishPlate;
     }
 
-    private Plate ChosePlatePrefab(ref int plateNum)
-    {
-        Plate platePrefab = _simplePlate;
-        if (plateNum % _plateAddingStepRate == 0)
-        {
-            platePrefab = _plateAddingStep;
-        }
-        else if (plateNum % _plateMovingBackRate == 0)
-        {
-            platePrefab = _plateMovingBack;
-        }
-        return platePrefab;
-    }
+    
 }

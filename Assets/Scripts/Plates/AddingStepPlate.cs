@@ -3,7 +3,7 @@ using Player;
 
 namespace Plates
 {
-    public class PlateAddingStep: Plate
+    public class AddingStepPlate: Plate
     {
         public static event Action StepAdding;
         

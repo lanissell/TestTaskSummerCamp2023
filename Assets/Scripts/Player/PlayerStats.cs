@@ -14,8 +14,8 @@ namespace Player
 
         private void OnEnable()
         {
-            PlateAddingStep.StepAdding += AddBonusCount;
-            PlateMovingBack.MovingBackActivating += AddFineCount;
+            AddingStepPlate.StepAdding += AddBonusCount;
+            MovingBackPlate.MovingBackActivating += AddFineCount;
             FinishPlate.PlayerFinished += UnsubscribeOnEvents;
         }
         
@@ -36,8 +36,8 @@ namespace Player
         private void UnsubscribeOnEvents(PlayerStats stats)
         {
             if (stats != this) return;
-            PlateAddingStep.StepAdding -= AddBonusCount;
-            PlateMovingBack.MovingBackActivating -= AddFineCount;
+            AddingStepPlate.StepAdding -= AddBonusCount;
+            MovingBackPlate.MovingBackActivating -= AddFineCount;
             FinishPlate.PlayerFinished -= UnsubscribeOnEvents;
         }
 

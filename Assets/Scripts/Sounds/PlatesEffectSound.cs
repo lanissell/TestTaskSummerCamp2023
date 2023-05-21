@@ -15,15 +15,15 @@ namespace Sounds
 
         private void OnEnable()
         {
-            PlateAddingStep.StepAdding += PlayBonusSound;
-            PlateMovingBack.MovingBackActivating += PlayFineSound;
+            AddingStepPlate.StepAdding += PlayBonusSound;
+            MovingBackPlate.MovingBackActivating += PlayFineSound;
             PlayersChanger.AllPlayerFinished += DestroyThisGameObject;
         }
 
         private void OnDisable()
         {
-            PlateAddingStep.StepAdding -= PlayBonusSound;
-            PlateMovingBack.MovingBackActivating -= PlayFineSound;
+            AddingStepPlate.StepAdding -= PlayBonusSound;
+            MovingBackPlate.MovingBackActivating -= PlayFineSound;
             PlayersChanger.AllPlayerFinished -= DestroyThisGameObject;
         }
 

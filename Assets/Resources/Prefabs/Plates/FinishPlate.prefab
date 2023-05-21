@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 5912017287551928901}
   - component: {fileID: 5912017287551928897}
   m_Layer: 0
-  m_Name: Finish
+  m_Name: FinishPlate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
