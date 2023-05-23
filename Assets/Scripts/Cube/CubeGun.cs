@@ -28,17 +28,18 @@ namespace Cube
 
         private void OnEnable()
         {
-            AddingStepPlate.StepAdding += SetCanShootTrue;
+            AddingStepPlate.StepAdding += OnStepAdding;
             PlayersChanger.PlayerChanged += OnPlayerChanged;
-            CubeNegativeZone.Touched += SetCanShootTrue;
-            PlayersChanger.AllPlayerFinished += DestroyGun;
+            CubeNegativeZone.Touched += OnTouched;
+            PlayersChanger.AllPlayerFinished += OnAllPlayerFinished;
         }
 
         private void OnDisable()
         {
-            AddingStepPlate.StepAdding -= SetCanShootTrue;
-            CubeNegativeZone.Touched -= SetCanShootTrue;
-            PlayersChanger.AllPlayerFinished -= DestroyGun;
+            AddingStepPlate.StepAdding -= OnStepAdding;
+            PlayersChanger.PlayerChanged -= OnPlayerChanged;
+            CubeNegativeZone.Touched -= OnTouched;
+            PlayersChanger.AllPlayerFinished -= OnAllPlayerFinished;
         }
 
         private void Start()
@@ -52,6 +53,26 @@ namespace Cube
             var spawnPoint = _cubeSpawnPoints[Random.Range(0, _cubeSpawnPoints.Length)];
             SpawnCube(spawnPoint);
             PushCube(spawnPoint.forward);
+        }
+
+        private void OnStepAdding()
+        {
+            SetCanShootTrue();
+        }
+        
+        private void OnPlayerChanged(PlayerStats playerStats)
+        {
+            SetCanShootTrue();
+        }
+
+        private void OnTouched()
+        {
+            SetCanShootTrue();
+        }
+
+        private void OnAllPlayerFinished()
+        {
+            DestroyGun();
         }
 
         private void SpawnCube(Transform spawnPoint)
@@ -73,11 +94,6 @@ namespace Cube
 
         private void SetCanShootTrue() => _isCanShoot = true;
 
-        private void OnPlayerChanged(PlayerStats playerStats)
-        {
-            SetCanShootTrue();
-        }
-        
         private void DestroyGun()
         {
             Destroy(gameObject);

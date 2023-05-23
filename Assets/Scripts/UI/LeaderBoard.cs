@@ -16,19 +16,29 @@ namespace UI
 
         private void OnEnable()
         {
-            FinishPlate.PlayerFinished += AddPlayerOnBoard;
-            PlayersChanger.AllPlayerFinished += ActivateLeaderBoard;
+            FinishPlate.PlayerFinished += OnPlayerFinished;
+            PlayersChanger.AllPlayerFinished += OnAllPlayerFinished;
         }
 
         private void OnDisable()
         {
-            FinishPlate.PlayerFinished -= AddPlayerOnBoard;
-            PlayersChanger.AllPlayerFinished -= ActivateLeaderBoard;
+            FinishPlate.PlayerFinished -= OnPlayerFinished;
+            PlayersChanger.AllPlayerFinished -= OnAllPlayerFinished;
         }
 
         private void Start()
         {
             _rowCreator = new LeaderBoardRowCreator();
+        }
+
+        private void OnPlayerFinished(PlayerStats playerStats)
+        {
+            AddPlayerOnBoard(playerStats);
+        }
+
+        private void OnAllPlayerFinished()
+        {
+            ActivateLeaderBoard();
         }
 
         private void AddPlayerOnBoard(PlayerStats stats)

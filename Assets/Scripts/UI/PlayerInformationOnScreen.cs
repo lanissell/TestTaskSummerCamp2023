@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using GameControl;
 using Player;
 using TMPro;
 using UnityEngine;
@@ -15,14 +17,31 @@ namespace UI
 
                 private void OnEnable()
                 {
-                    PlayersChanger.PlayerChanged += ShowInformationOnScreen;
-                    PlayersChanger.AllPlayerFinished += DestroyThisGameObject;
+                    PlayersCreator.PlayersCreated += OnPlayersCreated;
+                    PlayersChanger.PlayerChanged += OnPlayerChanged;
+                    PlayersChanger.AllPlayerFinished += OnAllPlayerFinished;
                 }
 
                 private void OnDisable()
                 {
-                    PlayersChanger.PlayerChanged -= ShowInformationOnScreen;
-                    PlayersChanger.AllPlayerFinished -= DestroyThisGameObject;
+                    PlayersCreator.PlayersCreated -= OnPlayersCreated;
+                    PlayersChanger.PlayerChanged -= OnPlayerChanged;
+                    PlayersChanger.AllPlayerFinished -= OnAllPlayerFinished;
+                }
+
+                private void OnPlayersCreated(List<PlayerStats> stats)
+                {
+                    ShowInformationOnScreen(stats[0]);
+                }
+
+                private void OnPlayerChanged(PlayerStats playerStats)
+                {
+                    ShowInformationOnScreen(playerStats);
+                }
+
+                private void OnAllPlayerFinished()
+                {
+                    DestroyThisGameObject();
                 }
 
                 private void ShowInformationOnScreen(PlayerStats playerStats)

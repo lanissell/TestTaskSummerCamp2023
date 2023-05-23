@@ -61,7 +61,7 @@ ModelImporter:
     indexFormat: 0
     secondaryUVAngleDistortion: 30
     secondaryUVAreaDistortion: 10
-    secondaryUVHardAngle: 40
+    secondaryUVHardAngle: 10
     secondaryUVMarginMethod: 1
     secondaryUVMinLightmapResolution: 40
     secondaryUVMinObjectScale: 1

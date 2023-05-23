@@ -1,4 +1,3 @@
-using System;
 using Cube;
 using Plates;
 using UnityEngine;
@@ -17,16 +16,16 @@ namespace Player
         {
             PlayingCube.CubeDropped += OnCubeDropped;
             AddingStepPlate.StepAdding += OnStepAdding;
-            MovingBackPlate.MovingBackActivating += AddFineCount;
-            FinishPlate.PlayerFinished += DisablePlayer;
+            MovingBackPlate.MovingBackActivating += OnMovingBackActivating;
+            FinishPlate.PlayerFinished += OnPlayerFinished;
         }
 
         private void OnDisable()
         {
             PlayingCube.CubeDropped -= OnCubeDropped;
             AddingStepPlate.StepAdding -= OnStepAdding;
-            MovingBackPlate.MovingBackActivating -= AddFineCount;
-            FinishPlate.PlayerFinished -= DisablePlayer;
+            MovingBackPlate.MovingBackActivating -= OnMovingBackActivating;
+            FinishPlate.PlayerFinished -= OnPlayerFinished;
         }
 
         private void OnCubeDropped(int sideNum)
@@ -37,6 +36,16 @@ namespace Player
         private void OnStepAdding()
         {
             AddBonusCount();
+        }
+
+        private void OnMovingBackActivating()
+        {
+            AddFineCount();
+        }
+
+        private void OnPlayerFinished(PlayerStats playerStats)
+        {
+            DisablePlayer(playerStats);
         }
 
         private void AddMovesCount() => MovesCount++;

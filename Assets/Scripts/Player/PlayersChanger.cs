@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Plates;
 using UnityEngine;
 
@@ -13,17 +14,20 @@ namespace Player
         private PlayersCreator _playersCreator;
         private int _currentPlayerIndex;
         private AudioSource _audioSource;
+        private List<PlayerStats> _playerStats;
 
         private void OnEnable()
         {
+            PlayersCreator.PlayersCreated += OnPlayersCreated;
             PlayerMovement.PlayerStopped += OnPlayerStopped;
-            FinishPlate.PlayerFinished += RemovePlayerFromList;
+            FinishPlate.PlayerFinished += OnPlayerFinished;
         }
 
         private void OnDisable()
         {
+            PlayersCreator.PlayersCreated -= OnPlayersCreated;
             PlayerMovement.PlayerStopped -= OnPlayerStopped;
-            FinishPlate.PlayerFinished -= RemovePlayerFromList;
+            FinishPlate.PlayerFinished -= OnPlayerFinished;
         }
 
         private void Start()
@@ -32,23 +36,36 @@ namespace Player
             _playersCreator = GetComponent<PlayersCreator>();
         }
 
+
+        private void OnPlayersCreated(List<PlayerStats> stats)
+        {
+            InitPlayersList(stats);
+        }
+        
         private void OnPlayerStopped(Plate plate)
         {
-            if (plate.IsMovePlayer) return;
+            if (plate.IsMovePlayer || _playerStats == null) return;
             ChangeCurrentPlayer();
         }
 
+        private void OnPlayerFinished(PlayerStats playerStats)
+        {
+            RemovePlayerFromList(playerStats);
+        }
+        
+        private void InitPlayersList(List<PlayerStats> stats) => _playerStats = stats;
+
         private void ChangeCurrentPlayer()
         {
-            if (_playersCreator.Players.Count == 0) return;
-            DeactivatePlayer(_playersCreator.Players[GetCurrentPlayerIndex()]);
+            if (_playerStats.Count == 0) return;
+            DeactivatePlayer(_playerStats[GetCurrentPlayerIndex()]);
             _currentPlayerIndex++;
-            ActivatePlayer(_playersCreator.Players[GetCurrentPlayerIndex()]);
+            ActivatePlayer(_playerStats[GetCurrentPlayerIndex()]);
         }
 
         private int GetCurrentPlayerIndex()
         {
-            if (_currentPlayerIndex > _playersCreator.Players.Count - 1 
+            if (_currentPlayerIndex > _playerStats.Count - 1 
                 || _currentPlayerIndex < 0) 
                 _currentPlayerIndex = 0;
             return _currentPlayerIndex;
@@ -68,10 +85,9 @@ namespace Player
         private void RemovePlayerFromList(PlayerStats playerStats)
         {
             _audioSource.Play();
-            var players = _playersCreator.Players;  
-            players.Remove(playerStats);
+            _playerStats.Remove(playerStats);
             _currentPlayerIndex--;
-            if (players.Count != 0) return;
+            if (_playerStats.Count != 0) return;
             AllPlayerFinished?.Invoke();
         }
 

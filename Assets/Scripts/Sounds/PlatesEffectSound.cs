@@ -15,21 +15,36 @@ namespace Sounds
 
         private void OnEnable()
         {
-            AddingStepPlate.StepAdding += PlayBonusSound;
-            MovingBackPlate.MovingBackActivating += PlayFineSound;
-            PlayersChanger.AllPlayerFinished += DestroyThisGameObject;
+            AddingStepPlate.StepAdding += OnStepAdding;
+            MovingBackPlate.MovingBackActivating += OnMovingBackActivating;
+            PlayersChanger.AllPlayerFinished += OnAllPlayersFinished;
         }
 
         private void OnDisable()
         {
-            AddingStepPlate.StepAdding -= PlayBonusSound;
-            MovingBackPlate.MovingBackActivating -= PlayFineSound;
-            PlayersChanger.AllPlayerFinished -= DestroyThisGameObject;
+            AddingStepPlate.StepAdding -= OnStepAdding;
+            MovingBackPlate.MovingBackActivating -= OnMovingBackActivating;
+            PlayersChanger.AllPlayerFinished -= OnAllPlayersFinished;
         }
 
         private void Start()
         {
             _soundPlayer = GetComponent<RandomSoundPlayer>();
+        }
+
+        private void OnStepAdding()
+        {
+            PlayBonusSound();
+        }
+
+        private void OnMovingBackActivating()
+        {
+            PlayFineSound();
+        }
+
+        private void OnAllPlayersFinished()
+        {
+            DestroyThisGameObject();
         }
 
         private void PlayBonusSound()

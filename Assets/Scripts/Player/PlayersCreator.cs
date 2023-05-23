@@ -7,8 +7,9 @@ namespace Player
 {
     public class PlayersCreator : MonoBehaviour
     {
-        [HideInInspector]
-        public List<PlayerStats> Players;
+        public static event Action<List<PlayerStats>> PlayersCreated;
+        
+        private List<PlayerStats> _players;
         [SerializeField]
         private Plate _startPlate;
         [SerializeField]
@@ -18,17 +19,22 @@ namespace Player
 
         private void OnEnable()
         {
-            GameStarter.GameStarted += CreatePlayers;
+            GameStarter.GameStarted += OnGameStarted;
         }
 
         private void OnDisable()
         {
-            GameStarter.GameStarted -= CreatePlayers;
+            GameStarter.GameStarted -= OnGameStarted;
         }
 
         private void Start()
         {
-            Players = new List<PlayerStats>();
+            _players = new List<PlayerStats>();
+        }
+
+        private void OnGameStarted(List<string> names)
+        {
+            CreatePlayers(names);
         }
 
         private void CreatePlayers(List<string> names)
@@ -43,10 +49,11 @@ namespace Player
                     newPlayer.Color = _newPlayerColors[colorIndex];
                     SetColor(ref colorIndex, playerRenderer);
                 }
-                Players.Add(newPlayer);
-                SetPlayerName(i, names[i]); 
+                _players.Add(newPlayer);
+                SetPlayerName(i, names[i]);
             }
-            Players[0].enabled = true;
+            _players[0].enabled = true;
+            PlayersCreated?.Invoke(_players);
         }
 
         private PlayerStats CreateOnePlayer()
@@ -64,10 +71,10 @@ namespace Player
         {
             if (playerName.Equals(""))
             {
-                Players[playerIndex].Name = $"Player {playerIndex + 1}";
+                _players[playerIndex].Name = $"Player {playerIndex + 1}";
                 return;
             }
-            Players[playerIndex].Name = playerName;
+            _players[playerIndex].Name = playerName;
         }
 
         private void SetColor(ref int colorIndex, Renderer playerRenderer)
