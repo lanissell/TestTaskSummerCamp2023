@@ -58,7 +58,7 @@ namespace Player
 
         private IEnumerator MovePlayerAlongWay(int plateCount, bool isBack)
         {
-            if (!_playerStats.CanPlay) yield break;
+            if (!_playerStats.enabled) yield break;
             for (int i = 0; i < plateCount; i++)
             {
                 Vector3 nextPosition = GetNextPlatePosition(isBack);
@@ -98,8 +98,6 @@ namespace Player
             var bezierPoint = Vector3.Lerp(startCenterSegment, centerEndSegment, time);
             return bezierPoint;
         }
-
         
-
     }
 }

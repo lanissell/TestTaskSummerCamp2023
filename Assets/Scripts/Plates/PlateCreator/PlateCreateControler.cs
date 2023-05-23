@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace Plates.PlateCreator
+﻿namespace Plates.PlateCreator
 {
     public class PlateCreateController
     {

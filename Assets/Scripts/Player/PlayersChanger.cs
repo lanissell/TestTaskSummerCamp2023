@@ -56,13 +56,12 @@ namespace Player
 
         private void DeactivatePlayer(PlayerStats player)
         {
-            player.AddMovesCount();
-            player.CanPlay = false;
+            player.enabled = false;
         }
 
         private void ActivatePlayer(PlayerStats player)
         {
-            player.CanPlay = true;
+            player.enabled = true;
             PlayerChanged?.Invoke(player);
         }
 

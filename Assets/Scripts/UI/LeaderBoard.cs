@@ -8,12 +8,11 @@ namespace UI
     public class LeaderBoard : MonoBehaviour
     {
         [SerializeField]
-        private LeaderBoardRow _rowPrefab;
-        [SerializeField]
         private GameObject _leaderBoardGameObject;
         [SerializeField]
         private Transform _tableTransform;
         private int _playerCounter;
+        private LeaderBoardRowCreator _rowCreator;
 
         private void OnEnable()
         {
@@ -27,14 +26,14 @@ namespace UI
             PlayersChanger.AllPlayerFinished -= ActivateLeaderBoard;
         }
 
+        private void Start()
+        {
+            _rowCreator = new LeaderBoardRowCreator();
+        }
+
         private void AddPlayerOnBoard(PlayerStats stats)
         {
-            var newRow = Instantiate(_rowPrefab, _tableTransform);
-            newRow.PositionText.text = (++_playerCounter).ToString();
-            newRow.NameText.text = stats.Name;
-            newRow.MovesText.text = stats.MovesCount.ToString();
-            newRow.FineText.text = stats.FineCount.ToString();
-            newRow.BonusText.text = stats.BonusCount.ToString();
+            _rowCreator.InstanceRow(stats, _tableTransform);
         }
         
         private void ActivateLeaderBoard()

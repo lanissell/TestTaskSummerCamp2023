@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UI
+namespace GameControl
 {
     public class GamePause : MonoBehaviour
     {

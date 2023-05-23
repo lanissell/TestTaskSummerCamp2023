@@ -33,11 +33,13 @@ public class WayGenerator : MonoBehaviour
         {
             int plateNum = i;
             PlateCreator plateCreator = _plateCreateController.GetPlateCreator(plateNum);
+            
             Plate plate = plateCreator.GetPlate(plateNum, _previousPlate);
             Transform plateTransform = plate.transform;
             plateTransform.position = childrenTransforms[plateNum].position;
             plateTransform.parent = _transform;
             _previousPlate.NextPlate = plate;
+            
             _previousPlate = plate;
             Destroy(childrenTransforms[i].gameObject);
         }

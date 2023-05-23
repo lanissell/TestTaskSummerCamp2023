@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GameControl;
 using Plates;
 using UnityEngine;
 namespace Player
@@ -45,7 +46,7 @@ namespace Player
                 Players.Add(newPlayer);
                 SetPlayerName(i, names[i]); 
             }
-            Players[0].CanPlay = true;
+            Players[0].enabled = true;
         }
 
         private PlayerStats CreateOnePlayer()
@@ -55,6 +56,7 @@ namespace Player
                 Quaternion.identity);
             newPlayer.transform.parent = emptyPoint;
             newPlayer.GetComponent<PlayerMovement>().StartPlate = _startPlate;
+            newPlayer.enabled = false;
             return newPlayer;
         }
 
