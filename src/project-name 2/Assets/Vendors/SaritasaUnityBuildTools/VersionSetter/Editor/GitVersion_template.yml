@@ -1,0 +1,36 @@
+assembly-versioning-scheme: MajorMinorPatchTag
+assembly-versioning-format: '{Major}.{Minor}.{Patch}.{PreReleaseNumber ?? 0}'
+assembly-file-versioning-scheme: MajorMinorPatchTag
+assembly-file-versioning-format: '{Major}.{Minor}.{Patch}.{PreReleaseNumber ?? 0}'
+mode: MainLine
+branches:
+  develop:
+    mode: ContinuousDeployment
+    regex: ^(origin/)?develop$
+  feature:
+    mode: ContinuousDeployment
+    increment: Minor
+    tracks-release-branches: true
+    regex: ^(origin/)?feature/
+    source-branches:
+    - develop
+  release:
+    mode: ContinuousDeployment
+    regex: ^(origin/)?release/
+    source-branches:
+    - develop
+  fix:
+    mode: ContinuousDeployment
+    regex: ^(origin/)?fix/
+    tag: fix
+    increment: None
+    source-branches:
+    - release
+  hotfix:
+    mode: ContinuousDeployment
+    regex: ^(origin/)?hotfix/
+    source-branches:
+    - main
+  main:
+    mode: ContinuousDelivery
+    regex: ^(origin/)?main$

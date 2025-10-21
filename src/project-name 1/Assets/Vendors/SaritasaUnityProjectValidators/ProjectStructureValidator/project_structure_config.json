@@ -1,0 +1,55 @@
+{
+  "rules": {
+    ".cs": {
+      "patterns": [
+        {
+          "pattern": "(?i)^(?:.*/)?scripts/.*\\.cs$",
+          "comment": "test"
+        },
+        {
+          "pattern": "(?i)^(?:.*/)?editor/.*\\.cs$",
+          "comment": "test"
+        }
+      ]
+    },
+    ".shader": {
+      "patterns": [
+        {
+          "pattern": "(?i)^(?:.*/)?shaders/.*\\.shader$",
+          "comment": ".shader files must be in 'Shaders/' directory"
+        }
+      ]
+    },
+    ".unity": {
+      "patterns": [
+        {
+          "pattern": "(?i)^(?:.*/)?scenes/.*\\.unity$",
+          "comment": ".unity files must be in 'Scenes/' directory"
+        }
+      ]
+    },
+    ".mp3": {
+      "patterns": [
+        {
+          "pattern": "(?i)^(?:.*/)?audio/.*\\.mp3$",
+          "comment": ".mp3 files must be in 'Audio/' directory"
+        }
+      ]
+    },
+    ".wav": {
+      "patterns": [
+        {
+          "pattern": "^(?!.*\\.wav$).*$",
+          "comment": "Use .mp3 instead of .wav"
+        }
+      ]
+    }
+  },
+  "ignore_dirs": [
+    "Vendors",
+    "UserWorkspace",
+    "Plugins",
+    "TextMesh Pro",
+    "Packages"
+  ]
+}
