@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Project Structure Validator.
-Validates file structure according to configured rules and patterns.
+Code Style Validator.
+Validates code style according to configured regex rules and patterns.
 """
 import re
 import json
@@ -49,14 +49,6 @@ def should_ignore(path, ignore_dirs):
     path_str = path.as_posix().lower()
     return any(ignored.lower() in path_str for ignored in ignore_dirs)
 
-def get_relative_path(path_obj, root_dir):
-    """Get relative path from root directory."""
-    try:
-        base = root_dir if root_dir else Path.cwd()
-        return path_obj.relative_to(base).as_posix()
-    except ValueError:
-        return path_obj.as_posix()
-
 def process_files(files, config_filename, compile_rules_func, check_file_func, cache):
     """Process multiple files and return validation results."""
     all_errors = []
@@ -96,7 +88,7 @@ def compile_rules(rules):
     return {
         ext: [
             {
-                "pattern": re.compile(p["pattern"], re.IGNORECASE),
+                "pattern": re.compile(p["pattern"]),
                 "comment": p.get("comment", "No comment")
             }
             for p in rule["patterns"]
@@ -106,7 +98,7 @@ def compile_rules(rules):
 
 def check_file(file_path, compiled_rules, ignore_dirs, root_dir):
     """
-    Validate single file according to rules.
+    Validate single file according to code style rules.
 
     Args:
         file_path: Path object of the file to validate.
@@ -115,7 +107,7 @@ def check_file(file_path, compiled_rules, ignore_dirs, root_dir):
         root_dir: Root directory for relative path calculation.
 
     Returns:
-        dict: Dictionary with error information or None if valid.
+        list: List of error dictionaries or None if valid.
     """
     # Skip non-files and ignored directories.
     if not file_path.is_file() or should_ignore(file_path, ignore_dirs):
@@ -127,26 +119,41 @@ def check_file(file_path, compiled_rules, ignore_dirs, root_dir):
     if ext not in compiled_rules:
         return None
 
-    rel_path = get_relative_path(file_path, root_dir)
+    errors = []
 
-    # Check if path matches any pattern.
-    if not any(p["pattern"].fullmatch(rel_path) for p in compiled_rules[ext]):
-        return {
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception as e:
+        return [{
             "file": str(file_path).replace('\\', '/'),
-            "comment": " OR ".join(p["comment"] for p in compiled_rules[ext])
-        }
+            "line": 0,
+            "comment": f"Failed to read file: {e}"
+        }]
 
-    return None
+    for line_num, line in enumerate(lines, 1):
+        line_content = line.rstrip('\n\r')
+
+        for rule in compiled_rules[ext]:
+            # Check if pattern matches (indicates violation)
+            if rule["pattern"].search(line_content):
+                errors.append({
+                    "file": str(file_path).replace('\\', '/'),
+                    "line": line_num,
+                    "comment": rule["comment"]
+                })
+
+    return errors if errors else None
 
 def main():
     """Main entry point for the validator."""
-    parser = argparse.ArgumentParser(description="Validate project file structure")
+    parser = argparse.ArgumentParser(description="Validate code style")
     parser.add_argument("files", nargs='+', help="List of files to validate")
     args = parser.parse_args()
 
     all_errors = process_files(
         args.files,
-        "project_structure_config.json",
+        "code_style_config.json",
         compile_rules,
         check_file,
         _compiled_rules_cache
@@ -159,7 +166,6 @@ def main():
         sys.exit(1)
     else:
         sys.exit(0)
-
 
 if __name__ == "__main__":
     main()

@@ -1,16 +1,12 @@
 using System;
 using System.Threading;
 using UnityEditor;
-using Debug = UnityEngine.Debug;
+using UnityEngine;
 
-/// <summary>
-/// Provides tools for validating the Unity project structure using an external Python script,
-/// and for generating or validating a GitHub Action workflow file for continuous validation.
-/// </summary>
-public static class ProjectStructureValidator
+public class ProjectCodeStyleValidator : MonoBehaviour
 {
-    private const string ValidatorName = "project_structure_validator";
-    private const string ValidatorFolder = "ProjectStructureValidator";
+    private const string ValidatorName = "code_style_validator";
+    private const string ValidatorFolder = "ProjectCodeStyleValidator";
 
     private static CancellationTokenSource cts;
 
@@ -20,13 +16,13 @@ public static class ProjectStructureValidator
         ProjectValidatorsRunner.RegisterValidatorByName(ValidatorName, ValidatorFolder);
     }
 
-    [MenuItem(ProjectValidatorsRunner.MenuItemStartPath + "Validate Project Structure")]
-    private static void CheckProjectStructure()
+    [MenuItem(ProjectValidatorsRunner.MenuItemStartPath + "Validate Project Code Style")]
+    private static void CheckProjectCodeStyl()
     {
         if (cts != null)
         {
             EditorUtility.DisplayDialog(
-                "Project Structure Validator",
+                "Project Code Style Validator",
                 "Please, wait until the current validation is finished.",
                 "OK"
             );
@@ -36,10 +32,10 @@ public static class ProjectStructureValidator
         cts?.Cancel();
         cts = new CancellationTokenSource();
 
-        CheckProjectStructureAsync(cts.Token);
+        CheckProjectCodeStyleAsync(cts.Token);
     }
 
-    private static async void CheckProjectStructureAsync(CancellationToken ct)
+    private static async void CheckProjectCodeStyleAsync(CancellationToken ct)
     {
         try
         {
@@ -47,11 +43,11 @@ public static class ProjectStructureValidator
         }
         catch (OperationCanceledException)
         {
-            Debug.Log("Project structure check cancelled.");
+            Debug.Log("Project code style check cancelled.");
         }
         catch (Exception e)
         {
-            Debug.LogError($"[Project Structure Checker] Error: {e.Message}");
+            Debug.LogError($"[Project Code Style Validator] Error: {e.Message}");
         }
         finally
         {
