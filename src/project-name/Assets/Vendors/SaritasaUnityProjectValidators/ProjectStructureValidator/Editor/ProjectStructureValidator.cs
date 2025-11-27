@@ -28,8 +28,7 @@ public static class ProjectStructureValidator
             EditorUtility.DisplayDialog(
                 "Project Structure Validator",
                 "Please, wait until the current validation is finished.",
-                "OK"
-            );
+                "OK");
             return;
         }
 
