@@ -1,12 +1,9 @@
 public class Test
 {
-    private void Awake()
+    private float Alt;
+
+    public static float getAlt()
     {
-        Debug.Log("Awake");
-    }
-    
-    private void Update()
-    {
-        Debug.Log("Update");
+        return Alt;
     }
 }
