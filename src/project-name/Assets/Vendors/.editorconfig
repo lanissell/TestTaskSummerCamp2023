@@ -7,6 +7,7 @@ root = true
 # A newline ending every file
 # Use 4 spaces as indentation
 [*]
+insert_final_newline = true
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
@@ -15,16 +16,12 @@ trim_trailing_whitespace = true
 [*.{html,cshtml,xaml}]
 indent_size = 2
 
-# Generated code
-[*{_AssemblyInfo.cs,.notsupported.cs}]
-generated_code = true
-
+# C# files
+[*.cs]
 # Analyzers
 dotnet_analyzer_diagnostic.category-Security.severity = error
 dotnet_code_quality.ca1802.api_surface = private, internal
 
-# C# files
-[*.cs]
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
@@ -149,43 +146,6 @@ dotnet_diagnostic.CA2208.severity = error
 dotnet_diagnostic.CS4014.severity = error
 dotnet_diagnostic.LindhartAnalyserMissingAwaitWarning.severity = error
 
-# Xml project files
-[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
-indent_size = 2
-
-[*.{csproj,vbproj,proj,nativeproj,locproj}]
-charset = utf-8
-
-# Xml files
-[*.{xml,stylecop,resx,ruleset}]
-indent_size = 2
-
-# Xml config files
-[*.{props,targets,config,nuspec,nuspec.template}]
-indent_size = 2
-
-# YAML config files
-[*.{yml,yaml}]
-indent_size = 2
-
-# JSON config files
-[*.{json,json.template}]
-indent_size = 2
-
-# Shell scripts
-[*.sh]
-end_of_line = lf
-[*.{cmd,bat}]
-end_of_line = crlf
-
-# NOTE: Requires **VS2019 16.3** or later
-
-# Saritasa Code Rules
-# Description: Saritasa code style conventions for .NET projects.
-
-# Code files
-[*.{cs,vb}]
-
 dotnet_diagnostic.CA1001.severity = warning
 dotnet_diagnostic.CA1009.severity = warning
 dotnet_diagnostic.CA1016.severity = warning
@@ -205,6 +165,7 @@ dotnet_diagnostic.CA1410.severity = warning
 dotnet_diagnostic.CA1415.severity = warning
 dotnet_diagnostic.CA1727.severity = warning
 dotnet_diagnostic.CA1801.severity = warning
+dotnet_diagnostic.CA1802.severity = warning
 dotnet_diagnostic.CA1804.severity = warning
 dotnet_diagnostic.CA1816.severity = warning
 dotnet_diagnostic.CA1821.severity = warning
@@ -265,6 +226,9 @@ dotnet_diagnostic.IDE0007.severity = none
 dotnet_diagnostic.IDE0036.severity = warning
 dotnet_diagnostic.IDE0049.severity = warning
 dotnet_diagnostic.IDE0090.severity = none
+dotnet_diagnostic.IDE0130.severity = none
+dotnet_diagnostic.IDE0160.severity = none
+dotnet_diagnostic.IDE0161.severity = none
 dotnet_diagnostic.IDE0270.severity = none
 dotnet_diagnostic.IDE0305.severity = none
 dotnet_diagnostic.SA0001.severity = none

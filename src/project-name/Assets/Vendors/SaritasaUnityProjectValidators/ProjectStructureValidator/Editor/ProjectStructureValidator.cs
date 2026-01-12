@@ -1,62 +1,65 @@
-using System;
+﻿using System;
 using System.Threading;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// Provides tools for validating the Unity project structure using an external Python script,
-/// and for generating or validating a GitHub Action workflow file for continuous validation.
-/// </summary>
-public static class ProjectStructureValidator
+namespace SaritasaUnityProjectValidators.Editor
 {
-    private const string ValidatorName = "project_structure_validator";
-    private const string ValidatorFolder = "ProjectStructureValidator";
-
-    private static CancellationTokenSource cts;
-
-    [InitializeOnLoadMethod]
-    private static void Initialize()
+    /// <summary>
+    /// Provides tools for validating the Unity project structure using an external Python script,
+    /// and for generating or validating a GitHub Action workflow file for continuous validation.
+    /// </summary>
+    public static class ProjectStructureValidator
     {
-        ProjectValidatorsRunner.RegisterValidatorByName(ValidatorName, ValidatorFolder);
-    }
+        private const string ValidatorName = "project_structure_validator";
+        private const string ValidatorFolder = "ProjectStructureValidator";
 
-    [MenuItem(ProjectValidatorsRunner.MenuItemStartPath + "Validate Project Structure")]
-    private static void CheckProjectStructure()
-    {
-        if (cts != null)
+        private static CancellationTokenSource cts;
+
+        [InitializeOnLoadMethod]
+        private static void Initialize()
         {
-            EditorUtility.DisplayDialog(
-                "Project Structure Validator",
-                "Please, wait until the current validation is finished.",
-                "OK");
-            return;
+            ProjectValidatorsRunner.RegisterValidatorByName(ValidatorName, ValidatorFolder);
         }
 
-        cts?.Cancel();
-        cts = new CancellationTokenSource();
+        [MenuItem(ProjectValidatorsRunner.MenuItemStartPath + "Validate Project Structure", priority = 22)]
+        private static void CheckProjectStructure()
+        {
+            if (cts != null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Project Structure Validator",
+                    "Please, wait until the current validation is finished.",
+                    "OK");
+                return;
+            }
 
-        CheckProjectStructureAsync(cts.Token);
-    }
-
-    private static async void CheckProjectStructureAsync(CancellationToken ct)
-    {
-        try
-        {
-            await ProjectValidatorsRunner.CheckProjectAsync(ValidatorName, ct);
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.Log("Project structure check cancelled.");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[Project Structure Checker] Error: {e.Message}");
-        }
-        finally
-        {
             cts?.Cancel();
-            cts?.Dispose();
-            cts = null;
+            cts = new CancellationTokenSource();
+
+            CheckProjectStructureAsync(cts.Token);
+        }
+
+        private static async void CheckProjectStructureAsync(CancellationToken ct)
+        {
+            try
+            {
+                await ProjectValidatorsRunner.CheckProject(ValidatorName, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("Project structure check cancelled.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Project Structure Checker] Error: {e.Message}");
+            }
+            finally
+            {
+                cts?.Cancel();
+                cts?.Dispose();
+                cts = null;
+            }
         }
     }
 }

@@ -1,0 +1,14 @@
+# Code Style Validator Ignore Patterns
+# Lines starting with # are comments
+# Patterns can be directory names, file names, or wildcards
+
+**/Editor/Npm/**
+**/Audio/**
+**/Models/**
+**/Prefabs/**
+**/Resources/**
+**/Scenes/**
+**/Shaders/**
+**/UI/**
+**/UserWorkspace/**
+**/Vendors/**
