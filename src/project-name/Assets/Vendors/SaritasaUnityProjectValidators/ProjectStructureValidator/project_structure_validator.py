@@ -8,42 +8,33 @@ import json
 import argparse
 import sys
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+# Cache for compiled rules by project path
+_compiled_rules_cache = {}
+
+PROJECT_PATH_PATTERN = r'^(.*[/\\]src[/\\][^/\\]+)'
+CONFIG_FILENAME = "project_structure_config.json"
 
 
-def load_config(config_path):
-    """
-    Load simplified JSON config with 'patterns' format everywhere.
+def extract_project_path(file_path: Path) -> Optional[Path]:
+    """Extract project path from file path (up to */src/project-name)."""
+    path_str = str(file_path.resolve())
+    match = re.search(PROJECT_PATH_PATTERN, path_str, re.IGNORECASE)
+    return Path(match.group(1)) if match else None
 
-    Args:
-        config_path: Path to the JSON configuration file.
 
-    Returns:
-        dict: Loaded configuration with rules and ignore directories.
-    """
+def load_config(config_path: Path) -> Optional[dict]:
+    """Load and parse JSON config file."""
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
+        with open(config_path, 'r', encoding='utf-8-sig') as f:
+            return json.load(f)
     except Exception as e:
-        print(f"[ERROR] Failed to read config: {e}")
-        sys.exit(1)
+        print(f"[ERROR] Failed to read {config_path.name}: {e}", file=sys.stderr)
+        return None
 
-    return config
 
-def should_ignore(path, ignore_dirs):
-    """
-    Return True if path should be ignored.
-
-    Args:
-        path: Path object to check.
-        ignore_dirs: List of directory patterns to ignore.
-
-    Returns:
-        bool: True if path should be ignored.
-    """
-    path_str = path.as_posix().lower()
-    return any(ignored.lower() in path_str for ignored in ignore_dirs)
-
-def compile_rules(rules):
+def compile_rules(rules: dict) -> Dict[str, List[dict]]:
     """
     Compile regex patterns for all rules.
 
@@ -53,131 +44,178 @@ def compile_rules(rules):
     Returns:
         dict: Compiled patterns with comments by extension.
     """
-    return {
-        ext: [
+    compiled = {}
+    for ext, rule in rules.items():
+        compiled[ext] = [
             {
                 "pattern": re.compile(p["pattern"], re.IGNORECASE),
                 "comment": p.get("comment", "No comment")
             }
             for p in rule["patterns"]
         ]
-        for ext, rule in rules.items()
-    }
+    return compiled
 
-def get_relative_path(path_obj, root_dir):
-    """
-    Get relative path from root directory.
 
-    Args:
-        path_obj: Path object to convert.
-        root_dir: Root directory for relative path calculation.
+def get_compiled_rules_for_project(
+    project_path: Path,
+    cache: dict
+) -> Tuple[Optional[dict], Optional[list]]:
+    """Get compiled rules for project with caching."""
+    project_key = str(project_path)
 
-    Returns:
-        str: Relative path as POSIX string.
-    """
+    if project_key in cache:
+        return cache[project_key]
+
+    config_path = next(project_path.rglob(CONFIG_FILENAME), None)
+    if not config_path:
+        print(f"[WARNING] {CONFIG_FILENAME} not found for project: {project_path}", file=sys.stderr)
+        return None, None
+
+    config = load_config(config_path)
+    if not config:
+        return None, None
+
+    compiled_rules = compile_rules(config["rules"])
+    ignore_dirs = config["ignore_dirs"]
+
+    cache[project_key] = (compiled_rules, ignore_dirs)
+    return cache[project_key]
+
+
+def should_ignore(path: Path, ignore_dirs: List[str]) -> bool:
+    """Return True if path should be ignored."""
+    path_str = path.as_posix().lower()
+    return any(ignored.lower() in path_str for ignored in ignore_dirs)
+
+
+def get_relative_path(path_obj: Path, root_dir: Optional[Path]) -> str:
+    """Get relative path from root directory."""
     try:
-        base = root_dir if root_dir else Path.cwd()
+        base = root_dir or Path.cwd()
         return path_obj.relative_to(base).as_posix()
     except ValueError:
         return path_obj.as_posix()
 
-def matches_any_pattern(rel_path, patterns):
+
+def collect_files_from_paths(paths: List[str]) -> List[Path]:
     """
-    Check if path matches any of the patterns.
+    Collect all files from list of paths (files or directories).
 
     Args:
-        rel_path: Relative path string.
-        patterns: List of compiled pattern dictionaries.
+        paths: List of file or directory paths.
 
     Returns:
-        bool: True if path matches any pattern.
+        list: List of Path objects for all files.
     """
-    return any(p["pattern"].fullmatch(rel_path) for p in patterns)
+    all_files = []
 
-def check_structure(files, rules, ignore_dirs, root_dir=None):
+    for path_str in paths:
+        path = Path(path_str)
+
+        if not path.exists():
+            continue
+
+        if path.is_file():
+            all_files.append(path)
+        elif path.is_dir():
+            all_files.extend(f for f in path.rglob("*") if f.is_file())
+
+    return all_files
+
+
+def check_file(
+    file_path: Path,
+    compiled_rules: dict,
+    ignore_dirs: List[str],
+    root_dir: Optional[Path]
+) -> Optional[dict]:
     """
-    Validate file structure according to rules.
+    Validate single file according to rules.
 
     Args:
-        files: List of file paths to validate.
-        rules: Dictionary of rules by file extension.
+        file_path: Path object of the file to validate.
+        compiled_rules: Dictionary of compiled rules by file extension.
         ignore_dirs: List of directories to ignore.
         root_dir: Root directory for relative path calculation.
 
     Returns:
-        dict: Dictionary of errors grouped by file extension.
+        dict: Dictionary with error information or None if valid.
     """
-    errors = {}
-    compiled = compile_rules(rules)
+    if should_ignore(file_path, ignore_dirs):
+        return None
 
+    ext = file_path.suffix.lower()
+    if ext not in compiled_rules:
+        return None
+
+    rel_path = get_relative_path(file_path, root_dir)
+    rules = compiled_rules[ext]
+
+    # Check if path matches any pattern
+    if any(rule["pattern"].fullmatch(rel_path) for rule in rules):
+        return None
+
+    return {
+        "file": str(file_path).replace('\\', '/'),
+        "comment": " OR ".join(rule["comment"] for rule in rules)
+    }
+
+
+def validate_files(files: List[Path], cache: dict) -> List[dict]:
+    """
+    Validate multiple files and return errors.
+
+    Args:
+        files: List of file paths to validate.
+        cache: Cache dictionary for compiled rules.
+
+    Returns:
+        list: List of validation errors.
+    """
+    errors = []
+    files_by_project = {}
+
+    # Group files by project
     for file_path in files:
-        path_obj = Path(file_path)
-
-        # Skip non-files and ignored directories.
-        if not path_obj.is_file() or should_ignore(path_obj, ignore_dirs):
+        project_path = extract_project_path(file_path)
+        if not project_path:
             continue
 
-        ext = path_obj.suffix.lower()
+        if project_path not in files_by_project:
+            files_by_project[project_path] = []
+        files_by_project[project_path].append(file_path)
 
-        # Skip extensions without rules.
-        if ext not in compiled:
+    # Validate each project's files
+    for project_path, project_files in files_by_project.items():
+        compiled_rules, ignore_dirs = get_compiled_rules_for_project(project_path, cache)
+
+        if not compiled_rules:
             continue
 
-        rel_path = get_relative_path(path_obj, root_dir)
-
-        # Check if path matches any pattern.
-        if not matches_any_pattern(rel_path, compiled[ext]):
-            errors.setdefault(ext, []).append({
-                "path": rel_path,
-                "expected": " OR ".join(p["comment"] for p in compiled[ext])
-            })
+        for file_path in project_files:
+            error = check_file(file_path, compiled_rules, ignore_dirs, project_path)
+            if error:
+                errors.append(error)
 
     return errors
 
-def print_pretty(errors):
-    """
-    Print formatted output.
-
-    Args:
-        errors: Dictionary of errors grouped by file extension.
-    """
-    if not errors:
-        print("All files comply with the rules")
-        return
-
-    # Print errors grouped by expected location.
-    for files in errors.values():
-        print(f"{files[0]['expected']}\n")
-        for f in files:
-            print(f"    {f['path']}")
 
 def main():
     """Main entry point for the validator."""
     parser = argparse.ArgumentParser(description="Validate project file structure")
-
-    # Mutually exclusive: validate directory or specific files.
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--dir", help="Root directory to validate")
-    group.add_argument("--files", nargs='+', help="List of files to validate")
-    parser.add_argument("--config", required=True, help="Path to JSON config")
+    parser.add_argument("paths", nargs='+', help="List of files or directories to validate")
     args = parser.parse_args()
 
-    config = load_config(args.config)
+    all_files = collect_files_from_paths(args.paths)
 
-    # Determine files to check based on input.
-    if args.dir:
-        files_to_check = list(Path(args.dir).rglob("*"))
-        root_dir = Path(args.dir)
-    else:
-        files_to_check = [Path(f) for f in args.files]
-        root_dir = None
+    if not all_files:
+        print(json.dumps([], indent=2, ensure_ascii=False))
+        sys.exit(0)
 
-    # Run validation.
-    errors = check_structure(files_to_check, config["rules"], config["ignore_dirs"], root_dir=root_dir)
-    print_pretty(errors)
+    errors = validate_files(all_files, _compiled_rules_cache)
 
-    # Exit with error code if validation failed.
-    sys.exit(0 if not errors else 1)
+    print(json.dumps(errors, indent=2, ensure_ascii=False))
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":
